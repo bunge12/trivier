@@ -102,3 +102,10 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Semantic-UI related
+semantic/dist/components
+semantic/dist/themes/*
+!semantic/dist/*.js
+!semantic/dist/*.css
+!semantic/dist/themes/default/

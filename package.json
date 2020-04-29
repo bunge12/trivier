@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/bunge12/trivier#readme",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "semantic-ui": "^2.4.2"
   }
 }
