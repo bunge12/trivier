@@ -15,8 +15,12 @@ App.get("/", (req, res) => {
   res.render("index");
 });
 
+App.post("/new", (req, res) => {
+  console.log("new received");
+  res.sendStatus(200);
+});
+
 App.listen(port, () => {
-  // eslint-disable-next-line no-console
   console.log(
     `Express seems to be listening on port ${port} so that's pretty good 👍`
   );
