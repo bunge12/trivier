@@ -1,16 +1,29 @@
 <%- include('partials/_header') %>
 
-    <div class="ui center aligned container">
-      <h3 class="ui header">Enter your name</h3>
-      <div class="ui input">
-        <input type="text" placeholder="Your Name" />
-      </div>
-      <div class="ui hidden divider"></div>
+<script>
+  $(document).ready(function () {
+    $("#form-name").submit(function () {
+      event.preventDefault();
+      let form = $(this);
+      let data = form.serialize();
+      alert(data);
+    });
+  });
+</script>
 
-      <button class="ui right labeled icon button">
-        <i class="right arrow icon"></i>
-        Next
-      </button>
+<div class="ui center aligned container">
+  <h3 class="ui header">Enter your name</h3>
+  <form class="ui form" id="form-name">
+    <div class="ui input">
+      <input type="text" placeholder="Your Name" name="name" />
     </div>
-  </body>
-</html>
+    <div class="ui hidden divider"></div>
+
+    <button class="ui right labeled icon button" type="submit">
+      <i class="right arrow icon"></i>
+      Next
+    </button>
+  </form>
+</div>
+
+<%- include('partials/_footer') %>
