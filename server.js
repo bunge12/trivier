@@ -37,6 +37,12 @@ App.post("/new", (req, res) => {
   res.send(room);
 });
 
+// Room & Game
+App.get("/game", (req, res) => {
+  // console.log(req.room)
+  res.render("game");
+});
+
 App.listen(port, () => {
   console.log(
     `Express seems to be listening on port ${port} so that's pretty good 👍`

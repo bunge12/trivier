@@ -12,8 +12,8 @@
         url: "/new",
         data: data,
         success: function (data) {
-          console.log(data);
-          // $(".container").append(data);
+          // console.log(data);
+          location.href = `/game/${data.id}`;
         },
       });
     });
@@ -24,7 +24,13 @@
   <h3 class="ui header">Enter your name</h3>
   <form class="ui form" id="form-name">
     <div class="ui input">
-      <input type="text" placeholder="Your Name" name="name" required />
+      <input
+        type="text"
+        placeholder="Your Name"
+        name="name"
+        value=""
+        required
+      />
     </div>
     <div class="ui hidden divider"></div>
 
