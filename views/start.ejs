@@ -12,8 +12,7 @@
         url: "/new",
         data: data,
         success: function (data) {
-          // console.log(data);
-          location.href = `/game/${data.id}`;
+          location.href = `/game`;
         },
       });
     });
@@ -28,7 +27,7 @@
         type="text"
         placeholder="Your Name"
         name="name"
-        value=""
+        value="<%= name %>"
         required
       />
     </div>

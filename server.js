@@ -22,7 +22,9 @@ App.get("/", (req, res) => {
 });
 
 App.get("/start", (req, res) => {
-  res.render("start");
+  let name = null;
+  req.cookies.name ? (name = req.cookies.name) : (name = null);
+  res.render("start", { name });
 });
 
 let rooms = {};
@@ -39,8 +41,14 @@ App.post("/new", (req, res) => {
 
 // Room & Game
 App.get("/game", (req, res) => {
-  // console.log(req.room)
-  res.render("game");
+  const room = req.cookies.room;
+  res.render("game", { room });
+});
+
+App.post("/game/:id", (req, res) => {
+  const id = req.id;
+  let result = null;
+  res.send(result);
 });
 
 App.listen(port, () => {

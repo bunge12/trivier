@@ -1,7 +1,20 @@
 <%- include('partials/_header') %>
 
+<script>
+  $(document).ready(function () {
+    let roomId = $("#room-code").html();
+    $.ajax({
+      type: "POST",
+      url: `/game/${roomId}`,
+      success: function (data) {
+        console.log(data);
+      },
+    });
+  });
+</script>
+
 <div class="ui center aligned container">
-  <h1 class="ui header">Room code: ABCD</h1>
+  <h1 class="ui header">Room code: <span id="room-code"><%= room %></span></h1>
   <p>In room:</p>
   <div class="ui massive labels">
     <a class="ui massive image label">
