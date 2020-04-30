@@ -104,10 +104,12 @@ const questions = [
   },
 ];
 
-const generateRoom = () => {
+const generateRoom = (name) => {
   const id = generateId(4);
   let result = {};
-  result = { id, questions, players: [] };
+  let players = {};
+  players[name] = { name, score: 0 };
+  result = { id, questions, players };
   return result;
 };
 

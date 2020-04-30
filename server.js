@@ -1,6 +1,7 @@
 const Express = require("express");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
+const bodyParser = require("body-parser");
 
 const App = Express();
 let port = process.env.PORT;
@@ -12,6 +13,7 @@ App.set("view engine", "ejs");
 App.use(morgan("dev"));
 App.use(Express.static("semantic/dist"));
 App.use(cookieParser());
+App.use(bodyParser.urlencoded({ extended: true }));
 
 const { generateRoom } = require("./scripts/generateRoom");
 
@@ -27,8 +29,10 @@ let rooms = {};
 
 // Generates new room, adds to server, sets cookie, sends
 App.post("/new", (req, res) => {
-  const room = generateRoom();
+  const { name } = req.body;
+  const room = generateRoom(name);
   rooms[room.id] = room;
+  res.cookie("name", name);
   res.cookie("room", room.id);
   res.send(room);
 });

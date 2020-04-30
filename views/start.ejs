@@ -6,7 +6,16 @@
       event.preventDefault();
       let form = $(this);
       let data = form.serialize();
-      alert(data);
+
+      $.ajax({
+        type: "POST",
+        url: "/new",
+        data: data,
+        success: function (data) {
+          console.log(data);
+          // $(".container").append(data);
+        },
+      });
     });
   });
 </script>
@@ -15,7 +24,7 @@
   <h3 class="ui header">Enter your name</h3>
   <form class="ui form" id="form-name">
     <div class="ui input">
-      <input type="text" placeholder="Your Name" name="name" />
+      <input type="text" placeholder="Your Name" name="name" required />
     </div>
     <div class="ui hidden divider"></div>
 
