@@ -104,9 +104,11 @@ const questions = [
   },
 ];
 
-export default function generateRoom() {
+const generateRoom = () => {
   const id = generateId(4);
-  const result = {};
-  result[id] = { questions, players: [] };
+  let result = {};
+  result = { id, questions, players: [] };
   return result;
-}
+};
+
+module.exports = { generateRoom };
