@@ -1,3 +1,4 @@
+require("dotenv").config();
 const Express = require("express");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
@@ -16,13 +17,31 @@ App.use(Express.static("public"));
 ///
 const { generateRoom } = require("./scripts/generateRoom");
 
+const MongoClient = require("mongodb").MongoClient;
+const client = new MongoClient(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+});
+
+const findRoom = async (code) => {
+  try {
+    await client.connect();
+    const collection = client.db("trivier").collection("games");
+    collection.find({ room: code }).toArray(function (err, result) {
+      if (err) throw err;
+      console.log(result);
+      client.close();
+    });
+  } catch (error) {
+    (error) => error;
+  }
+};
+findRoom("ABCD");
+
 App.get("/start", (req, res) => {
   let name = null;
   req.cookies.name ? (name = req.cookies.name) : (name = null);
   res.render("start", { name });
 });
-
-let rooms = {};
 
 // Generates new room, adds to server, sets cookie, sends
 App.post("/new", (req, res) => {
