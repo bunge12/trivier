@@ -1,4 +1,3 @@
-require("dotenv").config();
 const Express = require("express");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
@@ -15,27 +14,7 @@ const publicPath = path.join(__dirname, "../public");
 // App.use(Express.static(publicPath));
 App.use(Express.static("public"));
 ///
-const { generateRoom } = require("./scripts/generateRoom");
-
-const MongoClient = require("mongodb").MongoClient;
-const client = new MongoClient(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-});
-
-const findRoom = async (code) => {
-  try {
-    await client.connect();
-    const collection = client.db("trivier").collection("games");
-    collection.find({ room: code }).toArray(function (err, result) {
-      if (err) throw err;
-      console.log(result);
-      client.close();
-    });
-  } catch (error) {
-    (error) => error;
-  }
-};
-findRoom("ABCD");
+const { findRoom, newRoom } = require("./db");
 
 App.get("/start", (req, res) => {
   let name = null;
@@ -54,9 +33,11 @@ App.post("/new", (req, res) => {
 });
 
 // Room & Game
-App.get("/game", (req, res) => {
-  const room = req.cookies.room;
-  res.render("game", { room });
+App.get("/game/:id", async (req, res) => {
+  const id = req.id;
+  const result = await findRoom(id);
+  // const room = req.cookies.room;
+  res.send(result);
 });
 
 App.post("/game/:id", (req, res) => {
@@ -70,3 +51,26 @@ App.listen(8000, () => {
     `Express seems to be listening on port 8000 so that's pretty good 👍`
   );
 });
+
+/* 
+Find existing game
+GET /api/game/:id
+RES Game JSON
+
+Create new game
+POST /api/game/new?name=Artur
+RES Game JSON
+
+Add user
+POST /api/game?id=ABCD&name=Artur
+
+Record score
+POST /api/game/answer?id=ABCD&name=Artur&score=1
+
+Restart game
+POST /api/game/restart?id=ABCD
+
+End game
+POST /api/game/end?id=ABCD
+
+*/

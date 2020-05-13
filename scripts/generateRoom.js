@@ -105,12 +105,14 @@ const questions = [
 ];
 
 const generateRoom = (name) => {
-  const id = generateId(4);
+  const room = generateId(4);
   let result = {};
-  let players = {};
-  players[name] = { name, score: 0 };
-  result = { id, questions, players };
+  let playerName = name;
+  let players = { [playerName]: 0 };
+  result = { room, active: true, players, questions };
   return result;
 };
 
 module.exports = { generateRoom };
+
+// console.log(generateRoom("Artur"));
