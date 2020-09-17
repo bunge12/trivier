@@ -5,8 +5,7 @@ const PORT = 8001;
 const app = Express();
 app.use(morgan("dev"));
 
-const { findRoom, newRoom } = require("./db");
-const { generateRoom } = require("./scripts/generateRoom");
+const { findRoom, newRoom, addUser } = require("./db");
 
 app.get("/", (req, res) => {
   res.send("Welcome to the API server!");
@@ -40,9 +39,14 @@ app.post("/api/game/new/:name", (req, res) => {
 
 /*
 Add user
-POST /api/game?id=ABCD&name=Artur
+POST /api/game/:id/name/:name
 RES socket user added
 */
+app.post("/api/game/:id/join/:name", (req, res) => {
+  addUser(req.params.id, req.params.name, (result) => {
+    res.status(200).send(result);
+  });
+});
 
 /*
 Record score

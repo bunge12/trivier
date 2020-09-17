@@ -107,8 +107,7 @@ const questions = [
 const generateRoom = (name) => {
   const room = generateId(4);
   let result = {};
-  let playerName = name;
-  let players = { [playerName]: 0 };
+  let players = [{ name, score: 0 }];
   result = { room, active: true, players, questions };
   return result;
 };
