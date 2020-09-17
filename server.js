@@ -1,76 +1,65 @@
 const Express = require("express");
 const morgan = require("morgan");
-const cookieParser = require("cookie-parser");
-const bodyParser = require("body-parser");
-const path = require("path");
+const PORT = 8001;
 
-const App = Express();
+const app = Express();
+app.use(morgan("dev"));
 
-App.use(morgan("dev"));
-App.use(Express.static("semantic/dist"));
-App.use(cookieParser());
-App.use(bodyParser.urlencoded({ extended: true }));
-const publicPath = path.join(__dirname, "../public");
-// App.use(Express.static(publicPath));
-App.use(Express.static("public"));
-///
 const { findRoom, newRoom } = require("./db");
+const { generateRoom } = require("./scripts/generateRoom");
 
-App.get("/start", (req, res) => {
-  let name = null;
-  req.cookies.name ? (name = req.cookies.name) : (name = null);
-  res.render("start", { name });
+app.get("/", (req, res) => {
+  res.send("Welcome to the API server!");
 });
 
-// Generates new room, adds to server, sets cookie, sends
-App.post("/new", (req, res) => {
-  const { name } = req.body;
-  const room = generateRoom(name);
-  rooms[room.id] = room;
-  res.cookie("name", name);
-  res.cookie("room", room.id);
-  res.send(room);
+/*
+GET /api/game/:gameID
+Retrieve existing game
+RES Game JSON + socket connection TBD
+*/
+app.get("/api/game/:id", async (req, res) => {
+  findRoom(req.params.id.toUpperCase(), (result) => {
+    if (result.length < 1) {
+      res.status(404).send("No game found");
+    } else {
+      res.status(200).send(result);
+    }
+  });
 });
 
-// Room & Game
-App.get("/game/:id", async (req, res) => {
-  const id = req.id;
-  const result = await findRoom(id);
-  // const room = req.cookies.room;
-  res.send(result);
+/*
+POST /api/game/new/:name
+Create new game with one player
+RES Game JSON + socket connection TBD
+*/
+app.post("/api/game/new/:name", (req, res) => {
+  newRoom(req.params.name, (result) => {
+    res.status(200).send(result.ops);
+  });
 });
 
-App.post("/game/:id", (req, res) => {
-  const id = req.id;
-  let result = null;
-  res.send(result);
-});
-
-App.listen(8000, () => {
-  console.log(
-    `Express seems to be listening on port 8000 so that's pretty good 👍`
-  );
-});
-
-/* 
-Find existing game
-GET /api/game/:id
-RES Game JSON
-
-Create new game
-POST /api/game/new?name=Artur
-RES Game JSON
-
+/*
 Add user
 POST /api/game?id=ABCD&name=Artur
+RES socket user added
+*/
 
+/*
 Record score
 POST /api/game/answer?id=ABCD&name=Artur&score=1
+RES socket: move to next question 
 
 Restart game
 POST /api/game/restart?id=ABCD
+RES socket: new game
 
 End game
 POST /api/game/end?id=ABCD
-
+RES socket: game over
 */
+
+app.listen(8001, () => {
+  console.log(
+    `Express seems to be listening on port ${PORT} so that's pretty good 👍`
+  );
+});

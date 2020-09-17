@@ -4,16 +4,16 @@ const client = new MongoClient(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
-const findRoom = async (code) => {
+
+const findRoom = async (code, cb) => {
   try {
     await client.connect();
     const collection = client.db("trivier").collection("games");
-    collection
+    const response = collection
       .find({ room: code, active: true })
       .toArray(function (err, result) {
         if (err) throw err;
-        console.log(result.length);
-        client.close();
+        cb(result);
         return result;
       });
   } catch (error) {
@@ -22,7 +22,7 @@ const findRoom = async (code) => {
 };
 
 const { generateRoom } = require("./scripts/generateRoom");
-const newRoom = async (name) => {
+const newRoom = async (name, cb) => {
   try {
     const room = generateRoom(name);
     await client.connect();
@@ -30,7 +30,7 @@ const newRoom = async (name) => {
     collection.insertOne(room, function (err, result) {
       if (err) throw err;
       console.log("Inserted");
-      // client.close();
+      cb(result);
     });
   } catch (error) {
     (error) => error;
@@ -38,3 +38,5 @@ const newRoom = async (name) => {
 };
 
 module.exports = { findRoom, newRoom };
+
+// console.log(findRoom("ABCD"));
