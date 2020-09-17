@@ -5,7 +5,7 @@ const PORT = 8001;
 const app = Express();
 app.use(morgan("dev"));
 
-const { findRoom, newRoom, addUser } = require("./db");
+const { findRoom, newRoom, addUser, postScore } = require("./db");
 
 app.get("/", (req, res) => {
   res.send("Welcome to the API server!");
@@ -44,15 +44,32 @@ RES socket user added
 */
 app.post("/api/game/:id/join/:name", (req, res) => {
   addUser(req.params.id, req.params.name, (result) => {
-    res.status(200).send(result);
+    if (result.modifiedCount > 0) {
+      res.status(200).send("User Added");
+    } else {
+      res.status(404).send("Error");
+    }
   });
 });
 
 /*
 Record score
 POST /api/game/answer?id=ABCD&name=Artur&score=1
-RES socket: move to next question 
+RES socket: move to next question
+*/
+app.post("/api/game/:id/score/:name", (req, res) => {
+  postScore(req.params.id, req.params.name, (result) => {
+    if (result.modifiedCount > 0) {
+      res
+        .status(200)
+        .send(`Score added for ${req.params.name}, game ${req.params.id}`);
+    } else {
+      res.status(404).send("Error");
+    }
+  });
+});
 
+/*
 Restart game
 POST /api/game/restart?id=ABCD
 RES socket: new game
