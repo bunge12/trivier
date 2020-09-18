@@ -10,13 +10,14 @@ const client = new MongoClient(process.env.MONGO_URI, {
 const findRoom = async (code, cb) => {
   try {
     await client.connect();
-    const collection = client.db("trivier").collection("games");
-    const response = collection
+    const collection = client
+      .db(process.env.DB)
+      .collection(process.env.COLLECTION);
+    collection
       .find({ room: code, active: true })
       .toArray(function (err, result) {
         if (err) throw err;
         cb(result);
-        return result;
       });
   } catch (error) {
     (error) => error;
@@ -27,7 +28,9 @@ const newRoom = async (name, cb) => {
   try {
     const room = generateRoom(name);
     await client.connect();
-    const collection = client.db("trivier").collection("games");
+    const collection = client
+      .db(process.env.DB)
+      .collection(process.env.COLLECTION);
     collection.insertOne(room, function (err, result) {
       if (err) throw err;
       cb(result);
@@ -40,7 +43,9 @@ const newRoom = async (name, cb) => {
 const addUser = async (code, name, cb) => {
   try {
     await client.connect();
-    const collection = client.db("trivier").collection("games");
+    const collection = client
+      .db(process.env.DB)
+      .collection(process.env.COLLECTION);
     collection.updateOne(
       { room: code, active: true },
       { $push: { players: { id: generateId(6), name: name, score: 0 } } },
@@ -58,7 +63,9 @@ const addUser = async (code, name, cb) => {
 const postScore = async (code, name, cb) => {
   try {
     await client.connect();
-    const collection = client.db("trivier").collection("games");
+    const collection = client
+      .db(process.env.DB)
+      .collection(process.env.COLLECTION);
     collection.updateOne(
       { room: code, active: true, "players.name": name },
       { $inc: { "players.$.score": 1 } },

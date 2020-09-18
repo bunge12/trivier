@@ -113,5 +113,3 @@ const generateRoom = (name) => {
 };
 
 module.exports = { generateRoom, generateId };
-
-// console.log(generateRoom("Artur"));
