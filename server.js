@@ -1,14 +1,19 @@
 const Express = require("express");
 const morgan = require("morgan");
+const app = Express();
+const http = require("http").createServer(app);
+const io = require("socket.io")(http);
 const PORT = 8001;
 
-const app = Express();
 app.use(morgan("dev"));
 
 const { findRoom, newRoom, addUser, postScore } = require("./db");
 
 app.get("/", (req, res) => {
   res.send("Welcome to the API server!");
+});
+io.on("connection", (socket) => {
+  console.log("connected from Socket");
 });
 
 /*
@@ -79,7 +84,7 @@ POST /api/game/end?id=ABCD
 RES socket: game over
 */
 
-app.listen(8001, () => {
+http.listen(8001, () => {
   console.log(
     `Express seems to be listening on port ${PORT} so that's pretty good 👍`
   );
