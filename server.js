@@ -13,9 +13,21 @@ app.get("/", (req, res) => {
   res.send("Welcome to the API server!");
 });
 io.on("connection", (socket) => {
-  console.log("connected from Socket");
+  socket.on("searchGame", (data) => {
+    socket.join(data, () => {
+      findRoom(data.toUpperCase(), (result) => {
+        if (result.length < 1) {
+          io.to(data).emit(`roomNotFound`);
+          console.log("not found");
+          socket.leave(data);
+        } else {
+          io.to(data).emit(`roomJoined`, result);
+        }
+      });
+    });
+  });
 });
-
+//
 /*
 GET /api/game/:gameID
 Retrieve existing game
