@@ -7,44 +7,67 @@ const PORT = 8001;
 
 app.use(morgan("dev"));
 
-const { findRoom, newRoom, addUser, postScore } = require("./db");
+const { findRoom, newRoom, addUser, postScore, removeUser } = require("./db");
 
 app.get("/", (req, res) => {
-  res.send("Welcome to the API server!");
+  res.send("Welcome to the game server!");
 });
 io.on("connection", (socket) => {
+  let trackUserId;
+  let trackRoomId;
   socket.on("searchGame", (data) => {
     socket.join(data, () => {
       findRoom(data.toUpperCase(), (result) => {
         if (result.length < 1) {
-          io.to(data).emit(`roomNotFound`);
+          socket.emit(`roomNotFound`);
           console.log("not found");
           socket.leave(data);
         } else {
-          io.to(data).emit(`roomFound`, result[0].room);
+          socket.emit(`roomFound`, result[0].room);
         }
       });
     });
   });
-  socket.on("newGame", (name) => {
-    newRoom(name, (result) => {
+  socket.on("newGame", (name, userId) => {
+    newRoom(name, userId, (result) => {
       socket.join(result.ops[0].room, () => {
-        io.to(result.ops[0].room).emit(`waitingToStart`, result.ops);
+        trackUserId = userId;
+        trackRoomId = result.ops[0].room;
+        io.to(result.ops[0].room).emit(`waitingToStart`, result.ops, true);
       });
     });
   });
-  socket.on("addToGame", (roomId, name) => {
-    addUser(roomId, name, (result) => {
+  socket.on("addToGame", (roomId, name, userId) => {
+    addUser(roomId, name, userId, (result) => {
+      trackUserId = userId;
+      trackRoomId = roomId;
       if (result.modifiedCount > 0) {
         findRoom(roomId.toUpperCase(), (result) => {
           socket.join(roomId, () => {
-            io.to(roomId).emit(`waitingToStart`, result);
+            io.to(roomId).emit(`waitingToStart`, result, false);
           });
         });
       } else {
         res.status(404).send("Error");
       }
     });
+  });
+  socket.on("disconnect", () => {
+    console.log("someone disc", trackUserId, trackRoomId);
+    if (
+      typeof trackUserId !== "undefined" &&
+      typeof trackRoomId !== "undefined"
+    ) {
+      removeUser(trackRoomId, trackUserId, (result) => {
+        if (result.modifiedCount > 0) {
+          findRoom(trackRoomId.toUpperCase(), (result) => {
+            io.to(trackRoomId).emit(`waitingToStart`, result, false);
+          });
+        } else {
+          res.status(404).send(result);
+        }
+      });
+    }
   });
 });
 // result[0].room
@@ -82,6 +105,20 @@ RES socket user added
 */
 app.post("/api/game/:id/join/:name", (req, res) => {
   addUser(req.params.id, req.params.name, (result) => {
+    if (result.modifiedCount > 0) {
+      res.status(200).send(result);
+    } else {
+      res.status(404).send(result);
+    }
+  });
+});
+
+/*
+Remove user
+POST /api/game/:id/remove/:name
+*/
+app.post("/api/game/:id/remove/:name", (req, res) => {
+  removeUser(req.params.id, req.params.name, (result) => {
     if (result.modifiedCount > 0) {
       res.status(200).send(result);
     } else {

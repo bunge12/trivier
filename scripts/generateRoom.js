@@ -104,10 +104,10 @@ const questions = [
   },
 ];
 
-const generateRoom = (name) => {
+const generateRoom = (name, userId) => {
   const room = generateId(4);
   let result = {};
-  let players = [{ id: generateId(6), name, score: 0 }];
+  let players = [{ id: userId, name, score: 0 }];
   result = { room, active: true, players, questions };
   return result;
 };

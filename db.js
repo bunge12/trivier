@@ -24,9 +24,9 @@ const findRoom = async (code, cb) => {
   }
 };
 
-const newRoom = async (name, cb) => {
+const newRoom = async (name, userId, cb) => {
   try {
-    const room = generateRoom(name);
+    const room = generateRoom(name, userId);
     await client.connect();
     const collection = client
       .db(process.env.DB)
@@ -40,7 +40,7 @@ const newRoom = async (name, cb) => {
   }
 };
 
-const addUser = async (code, name, cb) => {
+const addUser = async (code, name, userId, cb) => {
   try {
     await client.connect();
     const collection = client
@@ -48,7 +48,7 @@ const addUser = async (code, name, cb) => {
       .collection(process.env.COLLECTION);
     collection.updateOne(
       { room: code, active: true },
-      { $push: { players: { id: generateId(6), name: name, score: 0 } } },
+      { $push: { players: { id: userId, name: name, score: 0 } } },
       function (err, result) {
         if (err) throw err;
         cb(result);
@@ -79,4 +79,23 @@ const postScore = async (code, name, cb) => {
   }
 };
 
-module.exports = { findRoom, newRoom, addUser, postScore };
+const removeUser = async (code, userId, cb) => {
+  try {
+    await client.connect();
+    const collection = client
+      .db(process.env.DB)
+      .collection(process.env.COLLECTION);
+    collection.updateOne(
+      { room: code, active: true },
+      { $pull: { players: { id: userId } } },
+      function (err, result) {
+        if (err) throw err;
+        cb(result);
+      }
+    );
+  } catch (error) {
+    (error) => error;
+  }
+};
+
+module.exports = { findRoom, newRoom, addUser, postScore, removeUser };
