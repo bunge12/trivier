@@ -21,12 +21,33 @@ io.on("connection", (socket) => {
           console.log("not found");
           socket.leave(data);
         } else {
-          io.to(data).emit(`roomJoined`, result);
+          io.to(data).emit(`roomFound`, result[0].room);
         }
       });
     });
   });
+  socket.on("newGame", (name) => {
+    newRoom(name, (result) => {
+      socket.join(result.ops[0].room, () => {
+        io.to(result.ops[0].room).emit(`waitingToStart`, result.ops);
+      });
+    });
+  });
+  socket.on("addToGame", (roomId, name) => {
+    addUser(roomId, name, (result) => {
+      if (result.modifiedCount > 0) {
+        findRoom(roomId.toUpperCase(), (result) => {
+          socket.join(roomId, () => {
+            io.to(roomId).emit(`waitingToStart`, result);
+          });
+        });
+      } else {
+        res.status(404).send("Error");
+      }
+    });
+  });
 });
+// result[0].room
 //
 /*
 GET /api/game/:gameID
@@ -62,9 +83,9 @@ RES socket user added
 app.post("/api/game/:id/join/:name", (req, res) => {
   addUser(req.params.id, req.params.name, (result) => {
     if (result.modifiedCount > 0) {
-      res.status(200).send("User Added");
+      res.status(200).send(result);
     } else {
-      res.status(404).send("Error");
+      res.status(404).send(result);
     }
   });
 });
