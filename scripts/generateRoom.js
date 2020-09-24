@@ -15,18 +15,9 @@ const questions = [
     category: "General Knowledge",
     type: "multiple",
     difficulty: "easy",
-    question: "On a dartboard, what number is directly opposite No. 1?",
-    correct_answer: "19",
-    incorrect_answers: ["20", "12", "15"],
-  },
-  {
-    category: "General Knowledge",
-    type: "multiple",
-    difficulty: "easy",
-    question:
-      "What word represents the letter &#039;T&#039; in the NATO phonetic alphabet?",
-    correct_answer: "Tango",
-    incorrect_answers: ["Target", "Taxi", "Turkey"],
+    question: "What is the French word for &quot;hat&quot;?",
+    correct_answer: "Chapeau",
+    incorrect_answers: ["Bonnet", " &Eacute;charpe", " Casque"],
   },
   {
     category: "General Knowledge",
@@ -37,13 +28,23 @@ const questions = [
     incorrect_answers: ["8", "9", "10"],
   },
   {
-    category: "General Knowledge",
-    type: "multiple",
+    category: "Entertainment: Music",
+    type: "boolean",
     difficulty: "easy",
-    question: "What is the French word for &quot;hat&quot;?",
-    correct_answer: "Chapeau",
-    incorrect_answers: ["Bonnet", " &Eacute;charpe", " Casque"],
+    question:
+      "The music group Daft Punk got their name from a negative review they recieved.",
+    correct_answer: "True",
+    incorrect_answers: ["False"],
   },
+  {
+    category: "Entertainment: Music",
+    type: "boolean",
+    difficulty: "easy",
+    question: "American rapper Dr. Dre actually has a Ph.D. doctorate.",
+    correct_answer: "False",
+    incorrect_answers: ["True"],
+  },
+
   {
     category: "General Knowledge",
     type: "multiple",
@@ -104,11 +105,26 @@ const questions = [
   },
 ];
 
+const shuffle = (a) => {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+
 const generateRoom = (name, userId) => {
   const room = generateId(4);
   let result = {};
+  let newQuestions = questions.map((entry) => {
+    console.log(typeof entry.incorrect_answers);
+    entry.all_answers = shuffle(
+      entry.incorrect_answers.concat(entry.correct_answer)
+    );
+    return entry;
+  });
   let players = [{ id: userId, name, score: 0 }];
-  result = { room, active: true, players, questions };
+  result = { room, active: true, players, questions: newQuestions };
   return result;
 };
 

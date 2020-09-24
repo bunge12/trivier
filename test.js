@@ -19,13 +19,13 @@ const result = [
         incorrect_answers: ["20", "12", "15"],
       },
       {
-        category: "General Knowledge",
-        type: "multiple",
+        category: "Entertainment: Music",
+        type: "boolean",
         difficulty: "easy",
         question:
-          "What word represents the letter &#039;T&#039; in the NATO phonetic alphabet?",
-        correct_answer: "Tango",
-        incorrect_answers: ["Target", "Taxi", "Turkey"],
+          "The music group Daft Punk got their name from a negative review they recieved.",
+        correct_answer: "True",
+        incorrect_answers: ["False"],
       },
       {
         category: "General Knowledge",

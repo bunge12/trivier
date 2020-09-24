@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { generateRoom, generateId } = require("./scripts/generateRoom");
+const { generateRoom } = require("./scripts/generateRoom");
 
 const MongoClient = require("mongodb").MongoClient;
 const client = new MongoClient(process.env.MONGO_URI, {
@@ -59,15 +59,14 @@ const addUser = async (code, name, userId, cb) => {
   }
 };
 
-// to-do: update from name to user ID
-const postScore = async (code, name, cb) => {
+const postScore = async (code, userId, cb) => {
   try {
     await client.connect();
     const collection = client
       .db(process.env.DB)
       .collection(process.env.COLLECTION);
     collection.updateOne(
-      { room: code, active: true, "players.name": name },
+      { room: code, active: true, "players.id": userId },
       { $inc: { "players.$.score": 1 } },
       function (err, result) {
         if (err) throw err;

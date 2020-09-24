@@ -15,6 +15,7 @@ app.get("/", (req, res) => {
 io.on("connection", (socket) => {
   let trackUserId;
   let trackRoomId;
+  let trackAdmin;
   socket.on("searchGame", (data) => {
     socket.join(data, () => {
       findRoom(data.toUpperCase(), (result) => {
@@ -33,6 +34,8 @@ io.on("connection", (socket) => {
       socket.join(result.ops[0].room, () => {
         trackUserId = userId;
         trackRoomId = result.ops[0].room;
+        trackAdmin = true;
+        console.log(`New room ${trackRoomId} created by ${trackUserId}`);
         io.to(result.ops[0].room).emit(`waitingToStart`, result.ops, true);
       });
     });
@@ -68,6 +71,29 @@ io.on("connection", (socket) => {
         }
       });
     }
+  });
+  socket.on("startGame", (roomId) => {
+    findRoom(roomId.toUpperCase(), (result) => {
+      io.to(roomId).emit(`gameStarted`, result);
+      let count = 0;
+      const interval = setInterval(() => {
+        io.to(roomId).emit(`nextQuestion`, result, count);
+        if (++count === 3) {
+          io.to(roomId).emit(`gameOver`);
+          clearInterval(interval);
+        }
+      }, 6000);
+      // if (count === 3) clearInterval(interval);
+    });
+  });
+  socket.on("recordScore", (gameId, userId) => {
+    postScore(gameId, userId, (result) => {
+      if (result.modifiedCount > 0) {
+        console.log("score recorded");
+      } else {
+        console.log("score not recorded");
+      }
+    });
   });
 });
 // result[0].room
