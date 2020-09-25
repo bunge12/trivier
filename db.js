@@ -18,7 +18,8 @@ const findRoom = async (code, cb) => {
       .toArray(function (err, result) {
         if (err) throw err;
         cb(result);
-      });
+      })
+      .then(client.close());
   } catch (error) {
     (error) => error;
   }
@@ -31,10 +32,12 @@ const newRoom = async (name, userId, cb) => {
     const collection = client
       .db(process.env.DB)
       .collection(process.env.COLLECTION);
-    collection.insertOne(room, function (err, result) {
-      if (err) throw err;
-      cb(result);
-    });
+    collection
+      .insertOne(room, function (err, result) {
+        if (err) throw err;
+        cb(result);
+      })
+      .then(client.close());
   } catch (error) {
     (error) => error;
   }
@@ -46,14 +49,16 @@ const addUser = async (code, name, userId, cb) => {
     const collection = client
       .db(process.env.DB)
       .collection(process.env.COLLECTION);
-    collection.updateOne(
-      { room: code, active: true },
-      { $push: { players: { id: userId, name: name, score: 0 } } },
-      function (err, result) {
-        if (err) throw err;
-        cb(result);
-      }
-    );
+    collection
+      .updateOne(
+        { room: code, active: true },
+        { $push: { players: { id: userId, name: name, score: 0 } } },
+        function (err, result) {
+          if (err) throw err;
+          cb(result);
+        }
+      )
+      .then(client.close());
   } catch (error) {
     (error) => error;
   }
@@ -65,14 +70,16 @@ const postScore = async (code, userId, cb) => {
     const collection = client
       .db(process.env.DB)
       .collection(process.env.COLLECTION);
-    collection.updateOne(
-      { room: code, active: true, "players.id": userId },
-      { $inc: { "players.$.score": 1 } },
-      function (err, result) {
-        if (err) throw err;
-        cb(result);
-      }
-    );
+    collection
+      .updateOne(
+        { room: code, active: true, "players.id": userId },
+        { $inc: { "players.$.score": 1 } },
+        function (err, result) {
+          if (err) throw err;
+          cb(result);
+        }
+      )
+      .then(client.close());
   } catch (error) {
     (error) => error;
   }
@@ -84,14 +91,16 @@ const removeUser = async (code, userId, cb) => {
     const collection = client
       .db(process.env.DB)
       .collection(process.env.COLLECTION);
-    collection.updateOne(
-      { room: code, active: true },
-      { $pull: { players: { id: userId } } },
-      function (err, result) {
-        if (err) throw err;
-        cb(result);
-      }
-    );
+    collection
+      .updateOne(
+        { room: code, active: true },
+        { $pull: { players: { id: userId } } },
+        function (err, result) {
+          if (err) throw err;
+          cb(result);
+        }
+      )
+      .then(client.close());
   } catch (error) {
     (error) => error;
   }

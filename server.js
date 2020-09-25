@@ -4,6 +4,8 @@ const app = Express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 const PORT = 8001;
+const NUM_QUES = 1; //+1
+const INTERVAL = 6000; // in ms
 
 app.use(morgan("dev"));
 
@@ -56,7 +58,7 @@ io.on("connection", (socket) => {
     });
   });
   socket.on("disconnect", () => {
-    console.log("someone disc", trackUserId, trackRoomId);
+    console.log("someone disc", trackUserId, trackRoomId, trackAdmin);
     if (
       typeof trackUserId !== "undefined" &&
       typeof trackRoomId !== "undefined"
@@ -77,12 +79,17 @@ io.on("connection", (socket) => {
       io.to(roomId).emit(`gameStarted`, result);
       let count = 0;
       const interval = setInterval(() => {
-        io.to(roomId).emit(`nextQuestion`, result, count);
-        if (++count === 3) {
-          io.to(roomId).emit(`gameOver`);
+        if (count === NUM_QUES) {
+          findRoom(roomId.toUpperCase(), (result) => {
+            io.to(roomId).emit(`gameOver`, result);
+          });
+          // io.to(roomId).emit(`gameOver`);
           clearInterval(interval);
+        } else {
+          count++;
+          io.to(roomId).emit(`nextQuestion`, result, count);
         }
-      }, 6000);
+      }, INTERVAL);
       // if (count === 3) clearInterval(interval);
     });
   });
