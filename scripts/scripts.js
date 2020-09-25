@@ -31,7 +31,7 @@ const shuffle = (a) => {
 const generateRoom = async (name, userId) => {
   const room = generateId(4);
   let result = {};
-  getQuestions()
+  return getQuestions()
     .then((data) => {
       let questions = data.map((entry) => {
         entry.all_answers = shuffle(
@@ -46,4 +46,4 @@ const generateRoom = async (name, userId) => {
     .catch((error) => error);
 };
 
-module.exports = { generateRoom, generateId, getQuestions };
+module.exports = { generateRoom, generateId, getQuestions, shuffle };

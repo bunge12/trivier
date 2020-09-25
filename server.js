@@ -4,7 +4,7 @@ const app = Express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 const PORT = 8001;
-const NUM_QUES = 1; //+1
+const NUM_QUES = 0; //+1
 const INTERVAL = 6000; // in ms
 
 app.use(morgan("dev"));
@@ -17,7 +17,7 @@ const {
   removeUser,
   resetRoom,
   endGame,
-} = require("./db");
+} = require("./db/db");
 
 app.get("/", (req, res) => {
   res.send("Welcome to the game server!");
@@ -69,6 +69,7 @@ io.on("connection", (socket) => {
     if (admin) {
       endGame(roomId, (result) => {
         if (result.modifiedCount > 0) {
+          console.log("admin disconnected, game deleted");
           io.to(roomId).emit(`gameEnded`);
           socket.leave(roomId);
         } else {
@@ -130,8 +131,8 @@ io.on("connection", (socket) => {
           // io.to(roomId).emit(`gameOver`);
           clearInterval(interval);
         } else {
-          count++;
           io.to(roomId).emit(`nextQuestion`, result, count);
+          count++;
         }
       }, INTERVAL);
       // if (count === 3) clearInterval(interval);
@@ -143,6 +144,17 @@ io.on("connection", (socket) => {
         console.log("score recorded");
       } else {
         console.log("score not recorded");
+      }
+    });
+  });
+  socket.on("playAgain", (gameId) => {
+    resetRoom(gameId, (result) => {
+      if (result.modifiedCount > 0) {
+        findRoom(gameId.toUpperCase(), (result) => {
+          io.to(gameId).emit(`waitingToStart`, result, true);
+        });
+      } else {
+        io.to(gameId).emit(`serverError`);
       }
     });
   });
@@ -242,7 +254,7 @@ POST /api/game/:id/restart
 app.post("/api/game/:id/restart", (req, res) => {
   resetRoom(req.params.id, (result) => {
     if (result.modifiedCount > 0) {
-      res.status(200).send(`Game ${req.params.id} reset`);
+      res.status(200).send(`Game ${req.params.id} reset: ${result}`);
     } else {
       res.status(404).send("Error");
     }
