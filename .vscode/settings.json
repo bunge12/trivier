@@ -1,0 +1,8 @@
+{
+  "appService.zipIgnorePattern": [
+    "node_modules{,/**}",
+    ".vscode{,/**}"
+  ],
+  "appService.defaultWebAppToDeploy": "/subscriptions/f72edc11-37e5-46c7-a832-26f9fb4ecf8c/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/trivier",
+  "appService.deploySubpath": "."
+}

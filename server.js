@@ -1,9 +1,14 @@
+require("dotenv").config();
 const Express = require("express");
 const morgan = require("morgan");
 const app = Express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
-const PORT = 8001;
+const path = require("path");
+let PORT = process.env.PORT;
+if (PORT == null || PORT == "") {
+  PORT = 8001;
+}
 const NUM_QUES = 0; //+1
 const INTERVAL = 6000; // in ms
 
@@ -19,8 +24,10 @@ const {
   endGame,
 } = require("./db/db");
 
-app.get("/", (req, res) => {
-  res.send("Welcome to the game server!");
+app.use(Express.static(path.join(__dirname, "build")));
+
+app.get("/", function (req, res) {
+  res.sendFile(path.join(__dirname, "build", "index.html"));
 });
 io.on("connection", (socket) => {
   let trackUserId;
@@ -157,107 +164,6 @@ io.on("connection", (socket) => {
         io.to(gameId).emit(`serverError`);
       }
     });
-  });
-});
-// result[0].room
-//
-/*
-GET /api/game/:gameID
-Retrieve existing game
-RES Game JSON + socket connection TBD
-*/
-app.get("/api/game/:id", async (req, res) => {
-  findRoom(req.params.id.toUpperCase(), (result) => {
-    if (result.length < 1) {
-      res.status(404).send("No game found");
-    } else {
-      res.status(200).send(result);
-    }
-  });
-});
-
-/*
-POST /api/game/new/:name
-Create new game with one player
-RES Game JSON + socket connection TBD
-*/
-app.post("/api/game/new/:name", (req, res) => {
-  newRoom(req.params.name, (result) => {
-    res.status(200).send(result.ops);
-  });
-});
-
-/*
-Add user
-POST /api/game/:id/name/:name
-RES socket user added
-*/
-app.post("/api/game/:id/join/:name", (req, res) => {
-  addUser(req.params.id, req.params.name, (result) => {
-    if (result.modifiedCount > 0) {
-      res.status(200).send(result);
-    } else {
-      res.status(404).send(result);
-    }
-  });
-});
-
-/*
-Remove user
-POST /api/game/:id/remove/:name
-*/
-app.post("/api/game/:id/remove/:name", (req, res) => {
-  removeUser(req.params.id, req.params.name, (result) => {
-    if (result.modifiedCount > 0) {
-      res.status(200).send(result);
-    } else {
-      res.status(404).send(result);
-    }
-  });
-});
-
-/*
-Record score
-POST /api/game/answer?id=ABCD&name=Artur&score=1
-RES socket: move to next question
-*/
-app.post("/api/game/:id/score/:name", (req, res) => {
-  postScore(req.params.id, req.params.name, (result) => {
-    if (result.modifiedCount > 0) {
-      res
-        .status(200)
-        .send(`Score added for ${req.params.name}, game ${req.params.id}`);
-    } else {
-      res.status(404).send("Error");
-    }
-  });
-});
-
-/*
-End game
-POST /api/game/:id/finish
-*/
-app.post("/api/game/:id/finish", (req, res) => {
-  endGame(req.params.id, (result) => {
-    if (result.modifiedCount > 0) {
-      res.status(200).send(`Game ${req.params.id} ended`);
-    } else {
-      res.status(404).send("Error");
-    }
-  });
-});
-
-/*
-Restart game
-POST /api/game/:id/restart
-*/
-app.post("/api/game/:id/restart", (req, res) => {
-  resetRoom(req.params.id, (result) => {
-    if (result.modifiedCount > 0) {
-      res.status(200).send(`Game ${req.params.id} reset: ${result}`);
-    } else {
-      res.status(404).send("Error");
-    }
   });
 });
 
