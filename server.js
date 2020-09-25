@@ -9,7 +9,15 @@ const INTERVAL = 6000; // in ms
 
 app.use(morgan("dev"));
 
-const { findRoom, newRoom, addUser, postScore, removeUser } = require("./db");
+const {
+  findRoom,
+  newRoom,
+  addUser,
+  postScore,
+  removeUser,
+  disconnect,
+  endGame,
+} = require("./db");
 
 app.get("/", (req, res) => {
   res.send("Welcome to the game server!");
@@ -61,6 +69,20 @@ io.on("connection", (socket) => {
     console.log("someone disc", trackUserId, trackRoomId, trackAdmin);
     if (
       typeof trackUserId !== "undefined" &&
+      typeof trackRoomId !== "undefined" &&
+      trackAdmin
+    ) {
+      endGame(trackRoomId, (result) => {
+        if (result.modifiedCount > 0) {
+          io.to(trackRoomId).emit(`gameEnded`);
+          socket.leave(trackRoomId);
+        } else {
+          io.to(trackRoomId).emit(`serverError`);
+        }
+      });
+    }
+    if (
+      typeof trackUserId !== "undefined" &&
       typeof trackRoomId !== "undefined"
     ) {
       removeUser(trackRoomId, trackUserId, (result) => {
@@ -69,7 +91,7 @@ io.on("connection", (socket) => {
             io.to(trackRoomId).emit(`waitingToStart`, result, false);
           });
         } else {
-          res.status(404).send(result);
+          io.to(trackRoomId).emit(`serverError`);
         }
       });
     }
@@ -183,9 +205,17 @@ POST /api/game/restart?id=ABCD
 RES socket: new game
 
 End game
-POST /api/game/end?id=ABCD
-RES socket: game over
+POST /api/game/:id/finish
 */
+app.post("/api/game/:id/finish", (req, res) => {
+  endGame(req.params.id, (result) => {
+    if (result.modifiedCount > 0) {
+      res.status(200).send(`Game ${req.params.id} ended`);
+    } else {
+      res.status(404).send("Error");
+    }
+  });
+});
 
 http.listen(8001, () => {
   console.log(
