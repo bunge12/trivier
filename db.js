@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { generateRoom } = require("./scripts/generateRoom");
+const { generateRoom } = require("./scripts/scripts");
 
 const MongoClient = require("mongodb").MongoClient;
 const client = new MongoClient(process.env.MONGO_URI, {
@@ -18,14 +18,15 @@ const findRoom = (code, cb) => {
   });
 };
 
-const newRoom = (name, userId, cb) => {
-  const room = generateRoom(name, userId);
-  const collection = client
-    .db(process.env.DB)
-    .collection(process.env.COLLECTION);
-  collection.insertOne(room, function (err, result) {
-    if (err) throw err;
-    cb(result);
+const newRoom = async (name, userId, cb) => {
+  await generateRoom(name, userId).then((room) => {
+    const collection = client
+      .db(process.env.DB)
+      .collection(process.env.COLLECTION);
+    collection.insertOne(room, function (err, result) {
+      if (err) throw err;
+      cb(result);
+    });
   });
 };
 
@@ -84,9 +85,28 @@ const endGame = (code, cb) => {
     }
   );
 };
-
-const disconnect = () => {
-  client.close();
+const newQuestions = [
+  {
+    category: "General Knowledge",
+    type: "multiple",
+    difficulty: "easy",
+    question: "How many colors are there in a rainbow?",
+    correct_answer: "7",
+    incorrect_answers: ["8", "9", "10"],
+  },
+];
+const resetRoom = (roomId, cb) => {
+  const collection = client
+    .db(process.env.DB)
+    .collection(process.env.COLLECTION);
+  collection.updateOne(
+    { room: roomId, active: true },
+    { $set: { "players.$[].score": 0, questions: newQuestions } },
+    function (err, result) {
+      if (err) throw err;
+      cb(result);
+    }
+  );
 };
 
 module.exports = {
@@ -95,6 +115,6 @@ module.exports = {
   addUser,
   postScore,
   removeUser,
-  disconnect,
   endGame,
+  resetRoom,
 };

@@ -15,7 +15,7 @@ const {
   addUser,
   postScore,
   removeUser,
-  disconnect,
+  resetRoom,
   endGame,
 } = require("./db");
 
@@ -64,6 +64,28 @@ io.on("connection", (socket) => {
         res.status(404).send("Error");
       }
     });
+  });
+  socket.on("leaveRoom", (roomId, userId, admin) => {
+    if (admin) {
+      endGame(roomId, (result) => {
+        if (result.modifiedCount > 0) {
+          io.to(roomId).emit(`gameEnded`);
+          socket.leave(roomId);
+        } else {
+          io.to(roomId).emit(`serverError`);
+        }
+      });
+    } else {
+      removeUser(roomId, userId, (result) => {
+        if (result.modifiedCount > 0) {
+          findRoom(roomId.toUpperCase(), (result) => {
+            io.to(roomId).emit(`someoneLeft`, result);
+          });
+        } else {
+          io.to(roomId).emit(`serverError`);
+        }
+      });
+    }
   });
   socket.on("disconnect", () => {
     console.log("someone disc", trackUserId, trackRoomId, trackAdmin);
@@ -200,10 +222,6 @@ app.post("/api/game/:id/score/:name", (req, res) => {
 });
 
 /*
-Restart game
-POST /api/game/restart?id=ABCD
-RES socket: new game
-
 End game
 POST /api/game/:id/finish
 */
@@ -211,6 +229,20 @@ app.post("/api/game/:id/finish", (req, res) => {
   endGame(req.params.id, (result) => {
     if (result.modifiedCount > 0) {
       res.status(200).send(`Game ${req.params.id} ended`);
+    } else {
+      res.status(404).send("Error");
+    }
+  });
+});
+
+/*
+Restart game
+POST /api/game/:id/restart
+*/
+app.post("/api/game/:id/restart", (req, res) => {
+  resetRoom(req.params.id, (result) => {
+    if (result.modifiedCount > 0) {
+      res.status(200).send(`Game ${req.params.id} reset`);
     } else {
       res.status(404).send("Error");
     }
