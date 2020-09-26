@@ -31,5 +31,5 @@ jobs:
       with:
         app-name: 'trivier'
         slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_15fb417b1ca7462aaea7dc9298678216 }}
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_bc5dd91c485b40bfb7c41e8eef23786c }}
         package: .
