@@ -1,13 +1,13 @@
-require("dotenv").config();
 const Express = require("express");
 const app = Express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 const path = require("path");
-let PORT = process.env.PORT;
+const PORT = process.env.PORT;
 
-const NUM_QUES = 9; //+1
-const INTERVAL = 6000; // in ms
+// Game Settings
+const NUM_QUES = 9; //Number of questions +1
+const INTERVAL = 8000; // in ms
 
 const {
   findRoom,
@@ -162,7 +162,7 @@ io.on("connection", (socket) => {
   });
 });
 
-http.listen(8001, () => {
+http.listen(PORT, () => {
   console.log(
     `Express seems to be listening on port ${PORT} so that's pretty good 👍`
   );
