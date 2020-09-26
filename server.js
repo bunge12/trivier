@@ -1,18 +1,13 @@
 require("dotenv").config();
 const Express = require("express");
-const morgan = require("morgan");
 const app = Express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 const path = require("path");
 let PORT = process.env.PORT;
-if (PORT == null || PORT == "") {
-  PORT = 8001;
-}
-const NUM_QUES = 0; //+1
-const INTERVAL = 6000; // in ms
 
-app.use(morgan("dev"));
+const NUM_QUES = 9; //+1
+const INTERVAL = 6000; // in ms
 
 const {
   findRoom,
