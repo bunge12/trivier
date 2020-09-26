@@ -3,7 +3,7 @@ const app = Express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 const path = require("path");
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 8080;
 
 // Game Settings
 const NUM_QUES = 9; //Number of questions +1
@@ -19,10 +19,14 @@ const {
   endGame,
 } = require("./db/db");
 
-app.use(Express.static(path.join(__dirname, "build")));
+// app.use(Express.static(path.join(__dirname, "build")));
 
-app.get("/", function (req, res) {
-  res.sendFile(path.join(__dirname, "build", "index.html"));
+// app.get("/", function (req, res) {
+//   res.sendFile(path.join(__dirname, "build", "index.html"));
+// });
+
+app.get("/", (req, res) => {
+  res.send("Welcome to game server");
 });
 io.on("connection", (socket) => {
   let trackUserId;
