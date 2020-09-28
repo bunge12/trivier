@@ -5,7 +5,7 @@ const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 
 const path = require("path");
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 8080;
 
 // Game Settings
 const NUM_QUES = 9; //Number of questions +1
@@ -36,7 +36,6 @@ io.on("connection", (socket) => {
       findRoom(data.toUpperCase(), (result) => {
         if (result.length < 1) {
           socket.emit(`roomNotFound`);
-          console.log("not found");
           socket.leave(data);
         } else {
           socket.emit(`roomFound`, result[0].room);
@@ -66,7 +65,7 @@ io.on("connection", (socket) => {
           });
         });
       } else {
-        res.status(404).send("Error");
+        io.to(roomId).emit(`serverError`);
       }
     });
   });
@@ -74,7 +73,6 @@ io.on("connection", (socket) => {
     if (admin) {
       endGame(roomId, (result) => {
         if (result.modifiedCount > 0) {
-          console.log("admin disconnected, game deleted");
           io.to(roomId).emit(`gameEnded`);
           socket.leave(roomId);
         } else {
@@ -94,7 +92,6 @@ io.on("connection", (socket) => {
     }
   });
   socket.on("disconnect", () => {
-    console.log("someone disc", trackUserId, trackRoomId, trackAdmin);
     if (
       typeof trackUserId !== "undefined" &&
       typeof trackRoomId !== "undefined" &&
@@ -129,14 +126,12 @@ io.on("connection", (socket) => {
           findRoom(roomId.toUpperCase(), (result) => {
             io.to(roomId).emit(`gameOver`, result);
           });
-          // io.to(roomId).emit(`gameOver`);
           clearInterval(interval);
         } else {
           io.to(roomId).emit(`nextQuestion`, result, count);
           count++;
         }
       }, INTERVAL);
-      // if (count === 3) clearInterval(interval);
     });
   });
   socket.on("recordScore", (gameId, userId) => {
