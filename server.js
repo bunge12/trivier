@@ -5,7 +5,7 @@ const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 
 const path = require("path");
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT;
 
 // Game Settings
 const NUM_QUES = 9; //Number of questions +1
@@ -21,10 +21,10 @@ const {
   endGame,
 } = require("./db/db");
 
-app.use(express.static(path.join(__dirname, "/client/build")));
+app.use(express.static(path.join(__dirname, "./client/build")));
 
-app.get("/*", function (req, res) {
-  res.sendFile(path.join(__dirname, "/client/build", "index.html"));
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
 });
 
 io.on("connection", (socket) => {
