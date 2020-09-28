@@ -1,11 +1,14 @@
 require("dotenv").config();
 const express = require("express");
+const cors = require("cors");
 const app = express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
-
-const path = require("path");
 const PORT = process.env.PORT;
+const corsOptions = {
+  origin: "https://trivier-a33b2.web.app/",
+  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
 
 // Game Settings
 const NUM_QUES = 9; //Number of questions +1
@@ -21,10 +24,8 @@ const {
   endGame,
 } = require("./db/db");
 
-app.use(express.static(path.join(__dirname, "./client/build")));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
+app.get("*", cors(corsOptions), (req, res) => {
+  res.send("Welcome to trivier");
 });
 
 io.on("connection", (socket) => {
