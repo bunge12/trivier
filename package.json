@@ -4,7 +4,7 @@
   "description": "Collaborative trivia game",
   "main": "server.js",
   "scripts": {
-    "start": "cd client && yarn && yarn build && cd ../ && node server.js",
+    "start": "cd client && npm run build && cd ../ && node server.js",
     "dev": "./node_modules/.bin/nodemon -L"
   },
   "repository": {
