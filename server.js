@@ -24,7 +24,9 @@ const {
   endGame,
 } = require("./db/db");
 
-app.get("*", cors(corsOptions), (req, res) => {
+app.use(cors(corsOptions));
+
+app.get("*", (req, res) => {
   res.send("Welcome to trivier");
 });
 
