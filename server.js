@@ -27,6 +27,7 @@ const {
 app.use(cors(corsOptions));
 
 app.get("*", (req, res) => {
+  res.cookie({ sameSite: "None", secure: false });
   res.send("Welcome to trivier");
 });
 
