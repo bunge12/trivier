@@ -3,7 +3,9 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const http = require("http").createServer(app);
-const io = require("socket.io")(http);
+const io = require("socket.io")(http, {
+  perMessageDeflate: false,
+});
 const PORT = process.env.PORT;
 const corsOptions = {
   origin: "https://trivier-a33b2.web.app/",
@@ -27,7 +29,7 @@ const {
 app.use(cors(corsOptions));
 
 app.get("*", (req, res) => {
-  res.cookie({ sameSite: "None", secure: false });
+  res.cookie({ sameSite: "none", secure: false });
   res.send("Welcome to trivier");
 });
 
