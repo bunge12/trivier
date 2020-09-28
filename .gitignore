@@ -109,3 +109,7 @@ semantic/dist/themes/*
 !semantic/dist/*.js
 !semantic/dist/*.css
 !semantic/dist/themes/default/
+
+.deployment
+.vscode/
+.github/

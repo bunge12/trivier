@@ -4,7 +4,8 @@
   "description": "Collaborative trivia game",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "./node_modules/.bin/nodemon -L"
   },
   "repository": {
     "type": "git",

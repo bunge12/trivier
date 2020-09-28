@@ -1,4 +1,3 @@
-// require("dotenv").config();
 const { generateRoom, getQuestions, shuffle } = require("../scripts/scripts");
 
 const MongoClient = require("mongodb").MongoClient;

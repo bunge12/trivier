@@ -1,9 +1,11 @@
-const Express = require("express");
-const app = Express();
+require("dotenv").config();
+const express = require("express");
+const app = express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
+
 const path = require("path");
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT;
 
 // Game Settings
 const NUM_QUES = 9; //Number of questions +1
@@ -19,15 +21,12 @@ const {
   endGame,
 } = require("./db/db");
 
-// app.use(Express.static(path.join(__dirname, "build")));
+app.use(express.static(path.join(__dirname, "/client/build")));
 
-// app.get("/", function (req, res) {
-//   res.sendFile(path.join(__dirname, "build", "index.html"));
-// });
-
-app.get("/", (req, res) => {
-  res.send("Welcome to game server");
+app.get("/*", function (req, res) {
+  res.sendFile(path.join(__dirname, "/client/build", "index.html"));
 });
+
 io.on("connection", (socket) => {
   let trackUserId;
   let trackRoomId;
@@ -102,12 +101,8 @@ io.on("connection", (socket) => {
       trackAdmin
     ) {
       endGame(trackRoomId, (result) => {
-        if (result.modifiedCount > 0) {
-          io.to(trackRoomId).emit(`gameEnded`);
-          socket.leave(trackRoomId);
-        } else {
-          io.to(trackRoomId).emit(`serverError`);
-        }
+        io.to(trackRoomId).emit(`gameEnded`);
+        socket.leave(trackRoomId);
       });
     }
     if (
