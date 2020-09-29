@@ -8,13 +8,13 @@ const io = require("socket.io")(http, {
 });
 const PORT = process.env.PORT;
 const corsOptions = {
-  origin: "https://trivier-a33b2.web.app/",
-  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+  origin: process.env.ORIGIN,
+  optionsSuccessStatus: 200,
 };
 
 // Game Settings
 const NUM_QUES = 9; //Number of questions +1
-const INTERVAL = 8000; // in ms
+const INTERVAL = 11000; // in ms
 
 const {
   findRoom,
