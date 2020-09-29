@@ -56,7 +56,12 @@ io.on("connection", (socket) => {
         trackRoomId = result.ops[0].room;
         trackAdmin = true;
         console.log(`New room ${trackRoomId} created by ${trackUserId}`);
-        io.to(result.ops[0].room).emit(`waitingToStart`, result.ops, true);
+        io.to(result.ops[0].room).emit(
+          `waitingToStart`,
+          result.ops,
+          NUM_QUES + 1,
+          true
+        );
       });
     });
   });
@@ -67,7 +72,7 @@ io.on("connection", (socket) => {
       if (result.modifiedCount > 0) {
         findRoom(roomId.toUpperCase(), (result) => {
           socket.join(roomId, () => {
-            io.to(roomId).emit(`waitingToStart`, result, false);
+            io.to(roomId).emit(`waitingToStart`, result, NUM_QUES + 1, false);
           });
         });
       } else {
@@ -79,6 +84,7 @@ io.on("connection", (socket) => {
     if (admin) {
       endGame(roomId, (result) => {
         if (result.modifiedCount > 0) {
+          console.log(`Game ${roomId} removed`);
           io.to(roomId).emit(`gameEnded`);
           socket.leave(roomId);
         } else {
@@ -90,6 +96,7 @@ io.on("connection", (socket) => {
         if (result.modifiedCount > 0) {
           findRoom(roomId.toUpperCase(), (result) => {
             io.to(roomId).emit(`someoneLeft`, result);
+            socket.leave(roomId);
           });
         } else {
           io.to(roomId).emit(`serverError`);
@@ -104,6 +111,7 @@ io.on("connection", (socket) => {
       trackAdmin
     ) {
       endGame(trackRoomId, (result) => {
+        console.log(`Game ${trackRoomId} removed`);
         io.to(trackRoomId).emit(`gameEnded`);
         socket.leave(trackRoomId);
       });
@@ -115,7 +123,12 @@ io.on("connection", (socket) => {
       removeUser(trackRoomId, trackUserId, (result) => {
         if (result.modifiedCount > 0) {
           findRoom(trackRoomId.toUpperCase(), (result) => {
-            io.to(trackRoomId).emit(`waitingToStart`, result, false);
+            io.to(trackRoomId).emit(
+              `waitingToStart`,
+              result,
+              NUM_QUES + 1,
+              false
+            );
           });
         } else {
           io.to(trackRoomId).emit(`serverError`);
@@ -153,7 +166,7 @@ io.on("connection", (socket) => {
     resetRoom(gameId, (result) => {
       if (result.modifiedCount > 0) {
         findRoom(gameId.toUpperCase(), (result) => {
-          io.to(gameId).emit(`waitingToStart`, result, true);
+          io.to(gameId).emit(`waitingToStart`, result, NUM_QUES + 1, true);
         });
       } else {
         io.to(gameId).emit(`serverError`);
