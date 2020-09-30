@@ -11,13 +11,28 @@ const generateId = (length) => {
   return result;
 };
 
-const getQuestions = () => {
-  return axios
-    .get("https://opentdb.com/api.php?amount=10&category=9")
-    .then((data) => {
-      return data.data.results;
-    })
-    .catch((error) => error);
+const getQuestions = (token) => {
+  if (token === "" || !token || token.length === 0) {
+    return axios
+      .get(`https://opentdb.com/api_token.php?command=request`)
+      .then((response) => {
+        token = response.data.token;
+        return axios.get(
+          `https://opentdb.com/api.php?amount=10&category=9&token=${token}`
+        );
+      })
+      .then((data) => {
+        return { token, questions: data.data.results };
+      })
+      .catch((error) => error);
+  } else {
+    return axios
+      .get(`https://opentdb.com/api.php?amount=10&category=9&token=${token}`)
+      .then((data) => {
+        return { token, questions: data.data.results };
+      })
+      .catch((error) => error);
+  }
 };
 
 const shuffle = (a) => {
@@ -33,14 +48,20 @@ const generateRoom = async (name, userId) => {
   let result = {};
   return getQuestions()
     .then((data) => {
-      let questions = data.map((entry) => {
+      let questions = data.questions.map((entry) => {
         entry.all_answers = shuffle(
           entry.incorrect_answers.concat(entry.correct_answer)
         );
         return entry;
       });
       let players = [{ id: userId, name, score: 0 }];
-      result = { room, active: true, players, questions: questions };
+      result = {
+        room,
+        token: data.token,
+        active: true,
+        players,
+        questions: questions,
+      };
       return result;
     })
     .catch((error) => error);

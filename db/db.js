@@ -87,10 +87,10 @@ const endGame = (code, cb) => {
   );
 };
 
-const resetRoom = (roomId, cb) => {
-  getQuestions()
+const resetRoom = (roomId, token, cb) => {
+  getQuestions(token)
     .then((data) => {
-      let questions = data.map((entry) => {
+      let questions = data.questions.map((entry) => {
         entry.all_answers = shuffle(
           entry.incorrect_answers.concat(entry.correct_answer)
         );
