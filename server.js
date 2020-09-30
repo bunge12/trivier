@@ -13,7 +13,7 @@ const corsOptions = {
 };
 
 // Game Settings
-const NUM_QUES = process.env.NUM_QUES; //Number of questions +1
+const NUM_QUES = parseInt(process.env.NUM_QUES); //Number of questions +1
 const INTERVAL = 11000; // in ms
 
 // DB Operators
