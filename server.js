@@ -83,7 +83,7 @@ io.on("connection", (socket) => {
           });
         });
       } else {
-        io.to(roomId).emit(`serverError`);
+        io.to(roomId).emit(`serverError`, `could not add player to the game`);
       }
     });
   });
@@ -97,7 +97,7 @@ io.on("connection", (socket) => {
           io.to(roomId).emit(`gameEnded`);
           socket.leave(roomId);
         } else {
-          io.to(roomId).emit(`serverError`);
+          io.to(roomId).emit(`serverError`, `game did not end well`);
         }
       });
     } else {
@@ -108,7 +108,10 @@ io.on("connection", (socket) => {
             socket.leave(roomId);
           });
         } else {
-          io.to(roomId).emit(`serverError`);
+          io.to(roomId).emit(
+            `serverError`,
+            `player left but couldn't be removed`
+          );
         }
       });
     }
@@ -142,7 +145,10 @@ io.on("connection", (socket) => {
             );
           });
         } else {
-          io.to(trackRoomId).emit(`serverError`);
+          io.to(trackRoomId).emit(
+            `serverError`,
+            `someone left but couldn't be removed`
+          );
         }
       });
     }
@@ -186,7 +192,7 @@ io.on("connection", (socket) => {
           io.to(roomId).emit(`waitingToStart`, result, NUM_QUES + 1);
         });
       } else {
-        io.to(roomId).emit(`serverError`);
+        io.to(roomId).emit(`serverError`, `couldn't restart room`);
       }
     });
   });
