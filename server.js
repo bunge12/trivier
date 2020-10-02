@@ -25,6 +25,7 @@ const {
   removeUser,
   resetRoom,
   endGame,
+  inSession,
 } = require("./db/db");
 
 app.use(cors(corsOptions));
@@ -45,6 +46,12 @@ io.on("connection", (socket) => {
       findRoom(roomId.toUpperCase(), (result) => {
         if (result.length < 1) {
           socket.emit(`roomNotFound`);
+          socket.leave(roomId);
+        } else if (result[0].inSession) {
+          socket.emit(
+            `gameError`,
+            `Game is currently in session. Try again later or join a different room.`
+          );
           socket.leave(roomId);
         } else {
           socket.emit(`roomFound`, result[0].room);
@@ -83,7 +90,7 @@ io.on("connection", (socket) => {
           });
         });
       } else {
-        io.to(roomId).emit(`serverError`, `could not add player to the game`);
+        io.to(roomId).emit(`gameError`, `could not add player to the game`);
       }
     });
   });
@@ -97,7 +104,7 @@ io.on("connection", (socket) => {
           io.to(roomId).emit(`gameEnded`);
           socket.leave(roomId);
         } else {
-          io.to(roomId).emit(`serverError`, `game did not end well`);
+          io.to(roomId).emit(`gameError`, `game did not end well`);
         }
       });
     } else {
@@ -109,7 +116,7 @@ io.on("connection", (socket) => {
           });
         } else {
           io.to(roomId).emit(
-            `serverError`,
+            `gameError`,
             `player left but couldn't be removed`
           );
         }
@@ -135,18 +142,22 @@ io.on("connection", (socket) => {
       typeof trackRoomId !== "undefined"
     ) {
       removeUser(trackRoomId, trackUserId, (result) => {
-        if (result.modifiedCount > 0) {
+        if (result) {
           findRoom(trackRoomId.toUpperCase(), (result) => {
-            io.to(trackRoomId).emit(
-              `waitingToStart`,
-              result,
-              NUM_QUES + 1,
-              false
-            );
+            if (result[0].inSession) {
+              io.to(trackRoomId).emit(`someoneLeft`, result);
+            } else {
+              io.to(trackRoomId).emit(
+                `waitingToStart`,
+                result,
+                NUM_QUES + 1,
+                false
+              );
+            }
           });
         } else {
           io.to(trackRoomId).emit(
-            `serverError`,
+            `gameError`,
             `someone left but couldn't be removed`
           );
         }
@@ -158,11 +169,13 @@ io.on("connection", (socket) => {
   socket.on("startGame", (roomId) => {
     findRoom(roomId.toUpperCase(), (result) => {
       io.to(roomId).emit(`gameStarted`, result);
+      inSession(roomId, true, () => {});
       let count = 0;
       const interval = setInterval(() => {
         if (count === NUM_QUES) {
           findRoom(roomId.toUpperCase(), (result) => {
             io.to(roomId).emit(`gameOver`, result);
+            inSession(roomId, false, () => {});
           });
           clearInterval(interval);
         } else {
@@ -192,7 +205,7 @@ io.on("connection", (socket) => {
           io.to(roomId).emit(`waitingToStart`, result, NUM_QUES + 1);
         });
       } else {
-        io.to(roomId).emit(`serverError`, `couldn't restart room`);
+        io.to(roomId).emit(`gameError`, `couldn't restart room`);
       }
     });
   });

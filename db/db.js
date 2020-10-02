@@ -79,7 +79,21 @@ const endGame = (code, cb) => {
     .collection(process.env.COLLECTION);
   collection.updateOne(
     { room: code, active: true },
-    { $set: { active: false } },
+    { $set: { active: false, inSession: false } },
+    function (err, result) {
+      if (err) throw err;
+      cb(result);
+    }
+  );
+};
+
+const inSession = (code, setting, cb) => {
+  const collection = client
+    .db(process.env.DB)
+    .collection(process.env.COLLECTION);
+  collection.updateOne(
+    { room: code, active: true },
+    { $set: { inSession: setting } },
     function (err, result) {
       if (err) throw err;
       cb(result);
@@ -119,4 +133,5 @@ module.exports = {
   removeUser,
   endGame,
   resetRoom,
+  inSession,
 };

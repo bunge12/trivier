@@ -59,6 +59,7 @@ const generateRoom = async (name, userId) => {
         room,
         token: data.token,
         active: true,
+        inSession: false,
         players,
         questions: questions,
       };
