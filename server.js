@@ -117,6 +117,7 @@ io.on("connection", (socket) => {
           socket.leave(roomId);
         } else {
           io.to(roomId).emit(`gameEnded`, `Game did not end well.`);
+          socket.leave(roomId);
         }
       });
     } else {
@@ -131,6 +132,7 @@ io.on("connection", (socket) => {
             `gameError`,
             `player left but couldn't be removed`
           );
+          socket.leave(roomId);
         }
       });
     }
@@ -167,6 +169,7 @@ io.on("connection", (socket) => {
             `gameEnded`,
             `Someone left but couldn't be removed.`
           );
+          socket.leave(trackRoomId);
         }
       });
     }
@@ -221,6 +224,7 @@ io.on("connection", (socket) => {
         });
       } else {
         io.to(roomId).emit(`gameEnded`, `couldn't restart room`);
+        socket.leave(roomId);
       }
     });
   });
