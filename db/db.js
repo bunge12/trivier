@@ -17,8 +17,8 @@ const findRoom = (code, cb) => {
   });
 };
 
-const newRoom = async (name, userId, cb) => {
-  generateRoom(name, userId)
+const newRoom = async (name, userId, settings, cb) => {
+  generateRoom(name, userId, settings)
     .then((room) => {
       const collection = client
         .db(process.env.DB)

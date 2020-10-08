@@ -11,7 +11,7 @@ const generateId = (length) => {
   return result;
 };
 
-const getQuestions = (token) => {
+const getQuestions = (settings, token) => {
   if (token === "" || !token || token.length === 0) {
     return axios
       .get(`https://opentdb.com/api_token.php?command=request`)
@@ -43,10 +43,10 @@ const shuffle = (a) => {
   return a;
 };
 
-const generateRoom = async (name, userId) => {
+const generateRoom = async (name, userId, settings) => {
   const room = generateId(4);
   let result = {};
-  return getQuestions()
+  return getQuestions(settings, false)
     .then((data) => {
       let questions = data.questions.map((entry) => {
         entry.all_answers = shuffle(

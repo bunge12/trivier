@@ -61,8 +61,8 @@ io.on("connection", (socket) => {
   });
 
   // Creates a new room with a name & userId provided as admin
-  socket.on("newGame", (name, userId) => {
-    newRoom(name, userId, (result) => {
+  socket.on("newGame", (name, userId, settings) => {
+    newRoom(name, userId, settings, (result) => {
       socket.join(result.ops[0].room, () => {
         trackUserId = userId;
         trackRoomId = result.ops[0].room;
@@ -136,6 +136,7 @@ io.on("connection", (socket) => {
         io.to(trackRoomId).emit(`gameEnded`);
         socket.leave(trackRoomId);
       });
+      return;
     }
     if (
       typeof trackUserId !== "undefined" &&
