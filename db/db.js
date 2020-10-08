@@ -18,6 +18,7 @@ const findRoom = (code, cb) => {
 };
 
 const newRoom = async (name, userId, settings, cb) => {
+  // console.log(name, userId, settings);
   generateRoom(name, userId, settings)
     .then((room) => {
       const collection = client

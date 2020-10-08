@@ -12,7 +12,7 @@ const generateId = (length) => {
 };
 
 const getQuestions = (settings, token) => {
-  let setDifficulty;
+  let setDifficulty = "";
   if (settings.difficulty !== "any") {
     setDifficulty = `&difficulty=${settings.difficulty}`;
   }
@@ -22,7 +22,7 @@ const getQuestions = (settings, token) => {
       .then((response) => {
         token = response.data.token;
         return axios.get(
-          `https://opentdb.com/api.php?amount=10&category=${settings.category}${setDifficulty}&token=${token}`
+          `https://opentdb.com/api.php?amount=10&category=${settings.category}&token=${token}${setDifficulty}`
         );
       })
       .then((data) => {
@@ -32,7 +32,7 @@ const getQuestions = (settings, token) => {
   } else {
     return axios
       .get(
-        `https://opentdb.com/api.php?amount=10&category=${settings.category}${setDifficulty}&token=${token}`
+        `https://opentdb.com/api.php?amount=10&category=${settings.category}&token=${token}${setDifficulty}`
       )
       .then((data) => {
         return { token, questions: data.data.results };

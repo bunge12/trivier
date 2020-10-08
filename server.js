@@ -49,7 +49,7 @@ io.on("connection", (socket) => {
           socket.leave(roomId);
         } else if (result[0].inSession) {
           socket.emit(
-            `gameError`,
+            `gameEnded`,
             `Game is currently in session. Try again later or join a different room.`
           );
           socket.leave(roomId);
@@ -64,16 +64,24 @@ io.on("connection", (socket) => {
   socket.on("newGame", (name, userId, settings) => {
     newRoom(name, userId, settings, (result) => {
       socket.join(result.ops[0].room, () => {
-        trackUserId = userId;
-        trackRoomId = result.ops[0].room;
-        trackAdmin = true;
-        console.log(`New room ${trackRoomId} created by ${trackUserId}`);
-        io.to(result.ops[0].room).emit(
-          `waitingToStart`,
-          result.ops,
-          NUM_QUES + 1,
-          true
-        );
+        if (result.ops[0].questions.length === 0) {
+          io.to(result.ops[0].room).emit(
+            `gameEnded`,
+            `Couldn't start game since the category doesn't have enough questions.`
+          );
+          socket.leave(result.ops[0].room);
+        } else {
+          trackUserId = userId;
+          trackRoomId = result.ops[0].room;
+          trackAdmin = true;
+          console.log(`New room ${trackRoomId} created by ${trackUserId}`);
+          io.to(result.ops[0].room).emit(
+            `waitingToStart`,
+            result.ops,
+            NUM_QUES + 1,
+            true
+          );
+        }
       });
     });
   });
@@ -90,7 +98,11 @@ io.on("connection", (socket) => {
           });
         });
       } else {
-        io.to(roomId).emit(`gameError`, `could not add player to the game`);
+        socket.emit(
+          `gameEnded`,
+          `Server error: could not add player to the game.`
+        );
+        socket.leave(roomId);
       }
     });
   });
@@ -101,10 +113,10 @@ io.on("connection", (socket) => {
       endGame(roomId, (result) => {
         if (result.modifiedCount > 0) {
           console.log(`Room ${roomId} removed`);
-          io.to(roomId).emit(`gameEnded`);
+          io.to(roomId).emit(`gameEnded`, `Game ended since admin left.`);
           socket.leave(roomId);
         } else {
-          io.to(roomId).emit(`gameError`, `game did not end well`);
+          io.to(roomId).emit(`gameEnded`, `Game did not end well.`);
         }
       });
     } else {
@@ -133,7 +145,10 @@ io.on("connection", (socket) => {
     ) {
       endGame(trackRoomId, (result) => {
         console.log(`Game ${trackRoomId} removed`);
-        io.to(trackRoomId).emit(`gameEnded`);
+        io.to(trackRoomId).emit(
+          `gameEnded`,
+          `Game ended since admin disconnected`
+        );
         socket.leave(trackRoomId);
       });
       return;
@@ -145,21 +160,12 @@ io.on("connection", (socket) => {
       removeUser(trackRoomId, trackUserId, (result) => {
         if (result) {
           findRoom(trackRoomId.toUpperCase(), (result) => {
-            if (result[0].inSession) {
-              io.to(trackRoomId).emit(`someoneLeft`, result);
-            } else {
-              io.to(trackRoomId).emit(
-                `waitingToStart`,
-                result,
-                NUM_QUES + 1,
-                false
-              );
-            }
+            io.to(trackRoomId).emit(`someoneLeft`, result);
           });
         } else {
           io.to(trackRoomId).emit(
-            `gameError`,
-            `someone left but couldn't be removed`
+            `gameEnded`,
+            `Someone left but couldn't be removed.`
           );
         }
       });
@@ -203,10 +209,18 @@ io.on("connection", (socket) => {
     resetRoom(roomId, settings, token, (result) => {
       if (result.modifiedCount > 0) {
         findRoom(roomId.toUpperCase(), (result) => {
-          io.to(roomId).emit(`waitingToStart`, result, NUM_QUES + 1);
+          if (result[0].questions.length === 0) {
+            io.to(roomId).emit(
+              `gameEnded`,
+              `Couldn't restart game since the category doesn't have enough questions.`
+            );
+            socket.leave(roomId);
+          } else {
+            io.to(roomId).emit(`waitingToStart`, result, NUM_QUES + 1);
+          }
         });
       } else {
-        io.to(roomId).emit(`gameError`, `couldn't restart room`);
+        io.to(roomId).emit(`gameEnded`, `couldn't restart room`);
       }
     });
   });
