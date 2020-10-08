@@ -17,8 +17,9 @@ const findRoom = (code, cb) => {
   });
 };
 
-const newRoom = async (name, userId, cb) => {
-  generateRoom(name, userId)
+const newRoom = async (name, userId, settings, cb) => {
+  // console.log(name, userId, settings);
+  generateRoom(name, userId, settings)
     .then((room) => {
       const collection = client
         .db(process.env.DB)
@@ -101,8 +102,8 @@ const inSession = (code, setting, cb) => {
   );
 };
 
-const resetRoom = (roomId, token, cb) => {
-  getQuestions(token)
+const resetRoom = (roomId, settings, token, cb) => {
+  getQuestions(settings, token)
     .then((data) => {
       let questions = data.questions.map((entry) => {
         entry.all_answers = shuffle(
