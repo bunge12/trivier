@@ -101,8 +101,8 @@ const inSession = (code, setting, cb) => {
   );
 };
 
-const resetRoom = (roomId, token, cb) => {
-  getQuestions(token)
+const resetRoom = (roomId, settings, token, cb) => {
+  getQuestions(settings, token)
     .then((data) => {
       let questions = data.questions.map((entry) => {
         entry.all_answers = shuffle(

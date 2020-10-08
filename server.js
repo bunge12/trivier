@@ -199,8 +199,8 @@ io.on("connection", (socket) => {
   });
 
   // Restart the game for the same room
-  socket.on("playAgain", (roomId, token) => {
-    resetRoom(roomId, token, (result) => {
+  socket.on("playAgain", (roomId, settings, token) => {
+    resetRoom(roomId, settings, token, (result) => {
       if (result.modifiedCount > 0) {
         findRoom(roomId.toUpperCase(), (result) => {
           io.to(roomId).emit(`waitingToStart`, result, NUM_QUES + 1);

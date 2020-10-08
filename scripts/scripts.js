@@ -12,13 +12,17 @@ const generateId = (length) => {
 };
 
 const getQuestions = (settings, token) => {
+  let setDifficulty;
+  if (settings.difficulty !== "any") {
+    setDifficulty = `&difficulty=${settings.difficulty}`;
+  }
   if (token === "" || !token || token.length === 0) {
     return axios
       .get(`https://opentdb.com/api_token.php?command=request`)
       .then((response) => {
         token = response.data.token;
         return axios.get(
-          `https://opentdb.com/api.php?amount=10&category=9&token=${token}`
+          `https://opentdb.com/api.php?amount=10&category=${settings.category}${setDifficulty}&token=${token}`
         );
       })
       .then((data) => {
@@ -27,7 +31,9 @@ const getQuestions = (settings, token) => {
       .catch((error) => error);
   } else {
     return axios
-      .get(`https://opentdb.com/api.php?amount=10&category=9&token=${token}`)
+      .get(
+        `https://opentdb.com/api.php?amount=10&category=${settings.category}${setDifficulty}&token=${token}`
+      )
       .then((data) => {
         return { token, questions: data.data.results };
       })
