@@ -39,8 +39,6 @@ io.on("connection", (socket) => {
   let trackUserId;
   let trackRoomId;
   let trackAdmin;
-  let inRoom = 0;
-  let answered = 0;
 
   // Looks for roomId in DB, joins user to room if found
   socket.on("searchRoom", (roomId) => {
@@ -76,7 +74,6 @@ io.on("connection", (socket) => {
           trackUserId = userId;
           trackRoomId = result.ops[0].room;
           trackAdmin = true;
-          inRoom++;
           console.log(`New room ${trackRoomId} created by ${trackUserId}`);
           io.to(result.ops[0].room).emit(
             `waitingToStart`,
@@ -94,7 +91,6 @@ io.on("connection", (socket) => {
     addUser(roomId, name, userId, (result) => {
       trackUserId = userId;
       trackRoomId = roomId;
-      inRoom++;
       if (result.modifiedCount > 0) {
         findRoom(roomId.toUpperCase(), (result) => {
           socket.join(roomId, () => {
@@ -128,7 +124,6 @@ io.on("connection", (socket) => {
       removeUser(roomId, userId, (result) => {
         if (result.modifiedCount > 0) {
           findRoom(roomId.toUpperCase(), (result) => {
-            inRoom--;
             io.to(roomId).emit(`someoneLeft`, result);
             socket.leave(roomId);
           });
@@ -167,7 +162,6 @@ io.on("connection", (socket) => {
       removeUser(trackRoomId, trackUserId, (result) => {
         if (result) {
           findRoom(trackRoomId.toUpperCase(), (result) => {
-            inRoom--;
             io.to(trackRoomId).emit(`someoneLeft`, result);
           });
         } else {
@@ -183,8 +177,6 @@ io.on("connection", (socket) => {
 
   // Record score for user. TBD: time calculations
   socket.on("recordScore", (roomId, userId, value) => {
-    answered++;
-    console.log(inRoom, answered);
     value &&
       postScore(roomId, userId, (result) => {
         if (result.modifiedCount > 0) {
@@ -209,7 +201,6 @@ io.on("connection", (socket) => {
           });
           clearInterval(interval);
         } else {
-          answered = 0;
           io.to(roomId).emit(`nextQuestion`, result, count);
           count++;
         }
