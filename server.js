@@ -175,6 +175,18 @@ io.on("connection", (socket) => {
     }
   });
 
+  // Record score for user. TBD: time calculations
+  socket.on("recordScore", (roomId, userId, value) => {
+    value &&
+      postScore(roomId, userId, (result) => {
+        if (result.modifiedCount > 0) {
+          console.log("score recorded");
+        } else {
+          console.log("score not recorded");
+        }
+      });
+  });
+
   // Start game, start cycling through questions
   socket.on("startGame", (roomId) => {
     findRoom(roomId.toUpperCase(), (result) => {
@@ -193,17 +205,6 @@ io.on("connection", (socket) => {
           count++;
         }
       }, INTERVAL);
-    });
-  });
-
-  // Record score for user. TBD: time calculations
-  socket.on("recordScore", (roomId, userId) => {
-    postScore(roomId, userId, (result) => {
-      if (result.modifiedCount > 0) {
-        console.log("score recorded");
-      } else {
-        console.log("score not recorded");
-      }
     });
   });
 
