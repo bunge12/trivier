@@ -113,3 +113,4 @@ semantic/dist/themes/*
 .deployment
 .vscode/
 .github/
+app.yaml
