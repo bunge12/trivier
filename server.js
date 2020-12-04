@@ -215,13 +215,9 @@ io.on("connection", (socket) => {
         findRoom(roomId.toUpperCase(), (result) => {
           if (result[0].answered === result[0].players.length) {
             console.log("all in", count);
-            clearInterval(interval);
-            clearInterval(check);
             resetAnswered(roomId, () => {});
             io.to(roomId).emit(`nextQuestion`, result, count);
             count++;
-            setInterval(gamePlay, INTERVAL);
-            setInterval(checkAnswers, 2000);
           }
         });
       };
