@@ -26,6 +26,7 @@ const {
   resetRoom,
   endGame,
   inSession,
+  resetAnswered,
 } = require("./db/db");
 
 app.use(cors(corsOptions));
@@ -176,15 +177,16 @@ io.on("connection", (socket) => {
   });
 
   // Record score for user. TBD: time calculations
+
   socket.on("recordScore", (roomId, userId, value) => {
-    value &&
-      postScore(roomId, userId, (result) => {
-        if (result.modifiedCount > 0) {
-          console.log("score recorded");
-        } else {
-          console.log("score not recorded");
-        }
-      });
+    console.log(value);
+    postScore(roomId, userId, value, (result) => {
+      if (result.modifiedCount > 0) {
+        console.log("score recorded");
+      } else {
+        console.log("score not recorded");
+      }
+    });
   });
 
   // Start game, start cycling through questions
@@ -193,18 +195,27 @@ io.on("connection", (socket) => {
       io.to(roomId).emit(`gameStarted`, result);
       inSession(roomId, true, () => {});
       let count = 0;
-      const interval = setInterval(() => {
+      let answered = 0;
+      const gamePlay = () => {
         if (count === NUM_QUES) {
           findRoom(roomId.toUpperCase(), (result) => {
             io.to(roomId).emit(`gameOver`, result);
             inSession(roomId, false, () => {});
           });
           clearInterval(interval);
+          clearInterval(check);
         } else {
+          resetAnswered(roomId, () => {});
           io.to(roomId).emit(`nextQuestion`, result, count);
           count++;
         }
-      }, INTERVAL);
+      };
+      const interval = setInterval(gamePlay, INTERVAL);
+      const check = setInterval(() => {
+        findRoom(roomId.toUpperCase(), (result) => {
+          console.log(result.answered, result.players.length);
+        });
+      }, 2000);
     });
   });
 

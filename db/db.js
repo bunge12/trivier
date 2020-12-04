@@ -45,13 +45,38 @@ const addUser = (code, name, userId, cb) => {
   );
 };
 
-const postScore = (code, userId, cb) => {
+const postScore = (code, userId, value, cb) => {
+  const collection = client
+    .db(process.env.DB)
+    .collection(process.env.COLLECTION);
+  if (value) {
+    collection.updateOne(
+      { room: code, active: true, "players.id": userId },
+      { $inc: { "players.$.score": 1, answered: 1 } },
+      function (err, result) {
+        if (err) throw err;
+        cb(result);
+      }
+    );
+  } else {
+    collection.updateOne(
+      { room: code, active: true },
+      { $inc: { answered: 1 } },
+      function (err, result) {
+        if (err) throw err;
+        cb(result);
+      }
+    );
+  }
+};
+
+const resetAnswered = (code, cb) => {
   const collection = client
     .db(process.env.DB)
     .collection(process.env.COLLECTION);
   collection.updateOne(
-    { room: code, active: true, "players.id": userId },
-    { $inc: { "players.$.score": 1 } },
+    { room: code, active: true },
+    { $set: { answered: 0 } },
     function (err, result) {
       if (err) throw err;
       cb(result);
@@ -134,4 +159,5 @@ module.exports = {
   endGame,
   resetRoom,
   inSession,
+  resetAnswered,
 };
