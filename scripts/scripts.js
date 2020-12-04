@@ -68,6 +68,7 @@ const generateRoom = async (name, userId, settings) => {
         inSession: false,
         players,
         questions: questions,
+        answered: 0,
       };
       return result;
     })

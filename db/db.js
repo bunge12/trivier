@@ -140,7 +140,7 @@ const resetRoom = (roomId, settings, token, cb) => {
         .collection(process.env.COLLECTION);
       collection.updateOne(
         { room: roomId, active: true },
-        { $set: { "players.$[].score": 0, questions: questions } },
+        { $set: { "players.$[].score": 0, questions: questions, answered: 0 } },
         function (err, result) {
           if (err) throw err;
           cb(result);

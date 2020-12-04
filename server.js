@@ -195,27 +195,38 @@ io.on("connection", (socket) => {
       io.to(roomId).emit(`gameStarted`, result);
       inSession(roomId, true, () => {});
       let count = 0;
-      let answered = 0;
       const gamePlay = () => {
+        console.log("Game run");
         if (count === NUM_QUES) {
           findRoom(roomId.toUpperCase(), (result) => {
             io.to(roomId).emit(`gameOver`, result);
             inSession(roomId, false, () => {});
+            clearInterval(interval);
+            clearInterval(check);
           });
-          clearInterval(interval);
-          clearInterval(check);
         } else {
           resetAnswered(roomId, () => {});
           io.to(roomId).emit(`nextQuestion`, result, count);
           count++;
         }
       };
-      const interval = setInterval(gamePlay, INTERVAL);
-      const check = setInterval(() => {
+      const checkAnswers = () => {
+        console.log("Check run");
         findRoom(roomId.toUpperCase(), (result) => {
-          console.log(result.answered, result.players.length);
+          if (result[0].answered === result[0].players.length) {
+            console.log("all in", count);
+            clearInterval(interval);
+            clearInterval(check);
+            resetAnswered(roomId, () => {});
+            io.to(roomId).emit(`nextQuestion`, result, count);
+            count++;
+            setInterval(gamePlay, INTERVAL);
+            setInterval(checkAnswers, 2000);
+          }
         });
-      }, 2000);
+      };
+      const interval = setInterval(gamePlay, INTERVAL);
+      const check = setInterval(checkAnswers, 2000);
     });
   });
 
