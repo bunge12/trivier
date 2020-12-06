@@ -194,35 +194,44 @@ io.on("connection", (socket) => {
     findRoom(roomId.toUpperCase(), (result) => {
       io.to(roomId).emit(`gameStarted`, result);
       inSession(roomId, true, () => {});
-      let count = 0;
-      const gamePlay = () => {
-        console.log("Game run");
-        if (count === NUM_QUES) {
-          findRoom(roomId.toUpperCase(), (result) => {
-            io.to(roomId).emit(`gameOver`, result);
-            inSession(roomId, false, () => {});
-            clearInterval(interval);
+      const gamePlay = (ms) =>
+        new Promise((resolve) => {
+          console.log(count);
+          const check = setInterval(() => {
+            console.log("checker");
+            findRoom(roomId.toUpperCase(), (result) => {
+              if (result[0].answered === result[0].players.length) {
+                console.log("all in", count);
+                io.to(roomId).emit(`nextQuestion`, result, count);
+                resolve();
+                resetAnswered(roomId, () => {});
+              }
+            });
+          }, 2000);
+          if (count === NUM_QUES) {
+            findRoom(roomId.toUpperCase(), (result) => {
+              io.to(roomId).emit(`gameOver`, result);
+              inSession(roomId, false, () => {});
+            });
             clearInterval(check);
-          });
-        } else {
-          resetAnswered(roomId, () => {});
-          io.to(roomId).emit(`nextQuestion`, result, count);
+            resolve();
+          }
+          setTimeout(() => {
+            io.to(roomId).emit(`nextQuestion`, result, count);
+            resetAnswered(roomId, () => {});
+            resolve();
+            clearInterval(check);
+          }, ms);
+        });
+      let count = 0;
+      async function game() {
+        while (count <= NUM_QUES) {
+          await gamePlay(INTERVAL);
           count++;
         }
-      };
-      const checkAnswers = () => {
-        console.log("Check run");
-        findRoom(roomId.toUpperCase(), (result) => {
-          if (result[0].answered === result[0].players.length) {
-            console.log("all in", count);
-            resetAnswered(roomId, () => {});
-            io.to(roomId).emit(`nextQuestion`, result, count);
-            count++;
-          }
-        });
-      };
-      const interval = setInterval(gamePlay, INTERVAL);
-      const check = setInterval(checkAnswers, 2000);
+      }
+
+      game();
     });
   });
 
