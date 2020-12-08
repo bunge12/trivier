@@ -13,8 +13,8 @@ const corsOptions = {
 };
 
 // Game Settings
-const NUM_QUES = parseInt(process.env.NUM_QUES); //Number of questions +1
-const INTERVAL = 12000; // in ms
+const NUM_QUES = parseInt(process.env.NUM_QUES);
+const INTERVAL = 11000; // in ms
 
 // DB Operators
 const {
@@ -80,7 +80,7 @@ io.on("connection", (socket) => {
           io.to(result.ops[0].room).emit(
             `waitingToStart`,
             result.ops,
-            NUM_QUES + 1,
+            NUM_QUES,
             true
           );
         }
@@ -96,7 +96,7 @@ io.on("connection", (socket) => {
       if (result.modifiedCount > 0) {
         findRoom(roomId.toUpperCase(), (result) => {
           socket.join(roomId, () => {
-            io.to(roomId).emit(`waitingToStart`, result, NUM_QUES + 1, false);
+            io.to(roomId).emit(`waitingToStart`, result, NUM_QUES, false);
           });
         });
       } else {
@@ -195,60 +195,44 @@ io.on("connection", (socket) => {
     findRoom(roomId.toUpperCase(), (result) => {
       io.to(roomId).emit(`gameStarted`, result);
       inSession(roomId, true, () => {});
-      const gamePlay = (count, ms) =>
-        new Promise((resolve) => {
-          //console.log(count);
-
-          const check = setInterval(() => {
-            console.log("checker");
-            findRoom(roomId.toUpperCase(), (result) => {
-              if (result[0].answered === result[0].players.length) {
-                console.log("all in", count);
-                io.to(roomId).emit(`nextQuestion`, result, count);
-                resolve();
-                clearTimeout(timeOut);
-                clearInterval(check);
-                resetAnswered(roomId, () => {});
-              }
-            });
-          }, 1500);
-
-          const timeOut = setTimeout(() => {
-            io.to(roomId).emit(`nextQuestion`, result, count);
-            resetAnswered(roomId, () => {});
-            resolve();
-            clearInterval(check);
-          }, ms);
-          // if (count === NUM_QUES) {
-          //   findRoom(roomId.toUpperCase(), (result) => {
-          //     io.to(roomId).emit(`gameOver`, result);
-          //     inSession(roomId, false, () => {});
-          //   });
-          //   clearInterval(check);
-          //   clearTimeout(timeOut);
-          //   resolve();
-          // }
-        });
-      // let count = 0;
-      // async function game() {
-      //   while (count <= NUM_QUES) {
-      //     await gamePlay(INTERVAL);
-      //     count++;
-      //   }
-      // }
-      async function game() {
-        for (let count = 0; count <= NUM_QUES; count++) {
+      const gamePlay = (count, ms) => {
+        return new Promise((resolve) => {
           if (count === NUM_QUES) {
             findRoom(roomId.toUpperCase(), (result) => {
               io.to(roomId).emit(`gameOver`, result);
               inSession(roomId, false, () => {});
+              resolve();
             });
           } else {
-            await gamePlay(count, INTERVAL);
+            const check = setInterval(() => {
+              console.log("checker");
+              findRoom(roomId.toUpperCase(), (result) => {
+                if (result[0].answered === result[0].players.length) {
+                  console.log("all in", count);
+                  io.to(roomId).emit(`nextQuestion`, result, count + 1);
+                  resolve();
+                  clearTimeout(timeOut);
+                  clearInterval(check);
+                  resetAnswered(roomId, () => {});
+                }
+              });
+            }, 1500);
+
+            const timeOut = setTimeout(() => {
+              io.to(roomId).emit(`nextQuestion`, result, count);
+              resetAnswered(roomId, () => {});
+              resolve();
+              clearInterval(check);
+            }, ms);
           }
+        });
+      };
+
+      async function game() {
+        for (let count = 0; count <= NUM_QUES; count++) {
+          await gamePlay(count, INTERVAL);
         }
       }
-
       game();
     });
   });
@@ -265,7 +249,7 @@ io.on("connection", (socket) => {
             );
             socket.leave(roomId);
           } else {
-            io.to(roomId).emit(`waitingToStart`, result, NUM_QUES + 1);
+            io.to(roomId).emit(`waitingToStart`, result, NUM_QUES);
           }
         });
       } else {
