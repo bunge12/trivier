@@ -209,7 +209,12 @@ io.on("connection", (socket) => {
               findRoom(roomId.toUpperCase(), (result) => {
                 if (result[0].answered === result[0].players.length) {
                   console.log("all in", count);
-                  io.to(roomId).emit(`nextQuestion`, result, count + 1);
+                  io.to(roomId).emit(
+                    `nextQuestion`,
+                    result,
+                    NUM_QUES,
+                    count + 1
+                  );
                   resolve();
                   clearTimeout(timeOut);
                   clearInterval(check);
@@ -219,7 +224,7 @@ io.on("connection", (socket) => {
             }, 1500);
 
             const timeOut = setTimeout(() => {
-              io.to(roomId).emit(`nextQuestion`, result, count);
+              io.to(roomId).emit(`nextQuestion`, result, NUM_QUES, count);
               resetAnswered(roomId, () => {});
               resolve();
               clearInterval(check);
