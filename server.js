@@ -93,6 +93,7 @@ io.on("connection", (socket) => {
     addUser(roomId, name, userId, (result) => {
       trackUserId = userId;
       trackRoomId = roomId;
+      trackAdmin = false;
       if (result.modifiedCount > 0) {
         findRoom(roomId.toUpperCase(), (result) => {
           socket.join(roomId, () => {
@@ -205,9 +206,8 @@ io.on("connection", (socket) => {
             });
           } else {
             const check = setInterval(() => {
-              console.log("checker");
+              console.log("checker", count);
               findRoom(roomId.toUpperCase(), (result) => {
-                console.log(result);
                 if (result.length > 0) {
                   if (result[0].answered === result[0].players.length) {
                     console.log("all in", count);
@@ -227,7 +227,8 @@ io.on("connection", (socket) => {
             }, 1500);
 
             const timeOut = setTimeout(() => {
-              io.to(roomId).emit(`nextQuestion`, result, NUM_QUES, count);
+              console.log("timeout", count);
+              io.to(roomId).emit(`nextQuestion`, result, NUM_QUES, count + 1);
               resetAnswered(roomId, () => {});
               resolve();
               clearInterval(check);
