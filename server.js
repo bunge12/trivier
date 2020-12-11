@@ -34,7 +34,7 @@ app.use(cors(corsOptions));
 
 app.get("*", (req, res) => {
   res.cookie({ sameSite: "none", secure: false });
-  res.send("Welcome to trivier");
+  res.send("Welcome to trivier 2.0");
 });
 
 io.on("connection", (socket) => {
@@ -207,18 +207,21 @@ io.on("connection", (socket) => {
             const check = setInterval(() => {
               console.log("checker");
               findRoom(roomId.toUpperCase(), (result) => {
-                if (result[0].answered === result[0].players.length) {
-                  console.log("all in", count);
-                  io.to(roomId).emit(
-                    `nextQuestion`,
-                    result,
-                    NUM_QUES,
-                    count + 1
-                  );
-                  resolve();
-                  clearTimeout(timeOut);
-                  clearInterval(check);
-                  resetAnswered(roomId, () => {});
+                console.log(result);
+                if (result.length > 0) {
+                  if (result[0].answered === result[0].players.length) {
+                    console.log("all in", count);
+                    io.to(roomId).emit(
+                      `nextQuestion`,
+                      result,
+                      NUM_QUES,
+                      count + 1
+                    );
+                    resolve();
+                    clearTimeout(timeOut);
+                    clearInterval(check);
+                    resetAnswered(roomId, () => {});
+                  }
                 }
               });
             }, 1500);
@@ -229,6 +232,10 @@ io.on("connection", (socket) => {
               resolve();
               clearInterval(check);
             }, ms);
+            socket.on("disconnect", () => {
+              clearTimeout(timeOut);
+              clearInterval(check);
+            });
           }
         });
       };
