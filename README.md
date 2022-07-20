@@ -2,6 +2,8 @@
 
 Trivier is an online trivia game that you can play with your friends, wherever they are! Create a room, invite your friends and see who can get the most questions right!
 
+![image](https://user-images.githubusercontent.com/54365622/179873963-8ca447b5-92ec-418c-84a2-d6ad766a8fee.png)
+
 ## Final Product
 
 - Built with MERN stack. This repo is the server, front end is [in this repo](https://github.com/bunge12/trivier-front).
